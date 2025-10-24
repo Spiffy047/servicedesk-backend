@@ -27,12 +27,6 @@ def get_email_logs():
     logs = query.order_by(EmailLog.created_at.desc()).all()
     return jsonify(email_logs_schema.dump(logs))
 
-@emails_bp.route('/logs/<log_id>', methods=['GET'])
-def get_email_log(log_id):
-    """Get specific email log"""
-    log = EmailLog.query.get_or_404(log_id)
-    return jsonify(email_log_schema.dump(log))
-
 @emails_bp.route('/stats', methods=['GET'])
 def get_email_stats():
     """Get email statistics"""
@@ -44,17 +38,11 @@ def get_email_stats():
         EmailLog.created_at >= start_date,
         EmailLog.status == 'sent'
     ).count()
-    failed_emails = EmailLog.query.filter(
-        EmailLog.created_at >= start_date,
-        EmailLog.status == 'failed'
-    ).count()
     
     success_rate = (sent_emails / total_emails * 100) if total_emails > 0 else 0
     
     return jsonify({
         'total_emails': total_emails,
         'sent_emails': sent_emails,
-        'failed_emails': failed_emails,
-        'success_rate': round(success_rate, 2),
-        'period_days': days
+        'success_rate': round(success_rate, 2)
     })
