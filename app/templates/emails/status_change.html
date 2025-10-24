@@ -11,24 +11,8 @@
     <h3>{{ ticket.title }}</h3>
     <p><strong>Ticket ID:</strong> {{ ticket.id }}</p>
     <p><strong>Status Change:</strong> {{ old_status }} → {{ new_status }}</p>
-    <p><strong>Priority:</strong> {{ ticket.priority }}</p>
-    <p><strong>Category:</strong> {{ ticket.category }}</p>
     <p><strong>Updated at:</strong> {{ ticket.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
 </div>
 
-{% if ticket.assigned_to %}
-<p><strong>Assigned to:</strong> {{ ticket.assigned_agent.name if ticket.assigned_agent else ticket.assigned_to }}</p>
-{% endif %}
-
-{% if new_status == 'Closed' %}
-<p><strong>🎉 This ticket has been resolved!</strong></p>
-{% elif new_status == 'Open' %}
-<p><strong>⚠️ This ticket requires attention</strong></p>
-{% elif new_status == 'Pending' %}
-<p><strong>⏳ This ticket is waiting for additional information</strong></p>
-{% endif %}
-
-<a href="{{ url_for('tickets.get_ticket', ticket_id=ticket.id, _external=True) }}" class="button">
-    View Ticket Details
-</a>
+<a href="#" class="button">View Ticket Details</a>
 {% endblock %}
