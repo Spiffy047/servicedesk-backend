@@ -53,7 +53,7 @@ def get_ticket(ticket_id):
 @tickets_bp.route('/', methods=['POST'])
 def create_ticket():
     """Create a new ticket"""
-    data = request.get_json()
+    data = request.get_json() or {}
     
     # Generate ticket ID
     ticket_count = Ticket.query.count() + 1
@@ -82,7 +82,7 @@ def create_ticket():
 def update_ticket(ticket_id):
     """Update a ticket"""
     ticket = Ticket.query.get_or_404(ticket_id)
-    data = request.get_json()
+    data = request.get_json() or {}
     
     old_status = ticket.status
     old_priority = ticket.priority
