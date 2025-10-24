@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required, get_jwt_identity, get_jwt
 from app import db
 from app.models.auth import UserAuth
 from app.models.user import User
@@ -27,14 +27,16 @@ def login():
     user_auth.last_login = datetime.utcnow()
     db.session.commit()
     
-    # Create access token
+    # Create tokens
     access_token = create_access_token(identity=user_auth.user_id)
+    refresh_token = create_refresh_token(identity=user_auth.user_id)
     
     # Get user details
     user = User.query.get(user_auth.user_id)
     
     return jsonify({
         'access_token': access_token,
+        'refresh_token': refresh_token,
         'user': {
             'id': user.id,
             'name': user.name,
@@ -59,6 +61,14 @@ def get_current_user():
         'email': user.email,
         'role': user.role
     })
+
+@auth_bp.route('/refresh', methods=['POST'])
+@jwt_required(refresh=True)
+def refresh():
+    """Refresh access token"""
+    current_user_id = get_jwt_identity()
+    new_token = create_access_token(identity=current_user_id)
+    return jsonify({'access_token': new_token})
 
 @auth_bp.route('/logout', methods=['POST'])
 @jwt_required()
