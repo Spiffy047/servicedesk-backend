@@ -1,0 +1,45 @@
+{% extends "emails/base.html" %}
+
+{% block title %}SLA Warning - {{ ticket.id }}{% endblock %}
+
+{% block header %}⚠️ SLA Warning{% endblock %}
+
+{% block content %}
+<h2 style="color: #dc2626;">SLA Violation Alert</h2>
+
+<div class="ticket-info priority-{{ ticket.priority.lower() }}">
+    <h3>{{ ticket.title }}</h3>
+    <p><strong>Ticket ID:</strong> {{ ticket.id }}</p>
+    <p><strong>Priority:</strong> {{ ticket.priority }}</p>
+    <p><strong>Status:</strong> {{ ticket.status }}</p>
+    <p><strong>Hours Open:</strong> {{ "%.1f"|format(ticket.hours_open) }}</p>
+    <p><strong>SLA Target:</strong> {{ ticket.sla_target_hours }} hours</p>
+    <p><strong>Time Remaining:</strong> 
+        {% if ticket.sla_violated %}
+            <span style="color: #dc2626; font-weight: bold;">OVERDUE</span>
+        {% else %}
+            {{ "%.1f"|format(ticket.sla_target_hours - ticket.hours_open) }} hours
+        {% endif %}
+    </p>
+</div>
+
+<div style="background-color: #fef2f2; border: 1px solid #fecaca; padding: 15px; border-radius: 6px; margin: 20px 0;">
+    <p style="color: #dc2626; font-weight: bold; margin: 0;">
+        {% if ticket.sla_violated %}
+            🚨 This ticket has violated its SLA target and requires immediate attention!
+        {% else %}
+            ⚠️ This ticket is approaching its SLA deadline and needs urgent attention!
+        {% endif %}
+    </p>
+</div>
+
+{% if ticket.assigned_to %}
+<p><strong>Assigned to:</strong> {{ ticket.assigned_agent.name if ticket.assigned_agent else ticket.assigned_to }}</p>
+{% else %}
+<p><strong style="color: #dc2626;">⚠️ This ticket is currently unassigned!</strong></p>
+{% endif %}
+
+<a href="{{ url_for('tickets.get_ticket', ticket_id=ticket.id, _external=True) }}" class="button" style="background-color: #dc2626;">
+    Take Action Now
+</a>
+{% endblock %}

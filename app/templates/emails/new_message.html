@@ -1,0 +1,39 @@
+{% extends "emails/base.html" %}
+
+{% block title %}New Message - {{ ticket.id }}{% endblock %}
+
+{% block header %}New Message Received{% endblock %}
+
+{% block content %}
+<h2>A new message has been added to your ticket</h2>
+
+<div class="ticket-info priority-{{ ticket.priority.lower() }}">
+    <h3>{{ ticket.title }}</h3>
+    <p><strong>Ticket ID:</strong> {{ ticket.id }}</p>
+    <p><strong>Priority:</strong> {{ ticket.priority }}</p>
+    <p><strong>Status:</strong> {{ ticket.status }}</p>
+</div>
+
+<div style="background-color: white; padding: 20px; border-radius: 6px; margin: 20px 0; border: 1px solid #e2e8f0;">
+    <h4>New Message from {{ message.sender_name }} ({{ message.sender_role }})</h4>
+    <p style="color: #64748b; font-size: 14px;">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
+        {{ message.message|nl2br }}
+    </div>
+    
+    {% if message.attachments %}
+    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #f1f5f9;">
+        <p><strong>Attachments:</strong></p>
+        <ul>
+        {% for attachment in message.attachments %}
+            <li>{{ attachment.filename }}</li>
+        {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+
+<a href="{{ url_for('tickets.get_ticket', ticket_id=ticket.id, _external=True) }}" class="button">
+    View Full Conversation
+</a>
+{% endblock %}
