@@ -18,15 +18,12 @@ class NotificationSettings(db.Model):
     assignment_email = db.Column(db.Boolean, default=True)
     
     # Frequency settings
-    digest_frequency = db.Column(db.String(20), default='immediate')  # 'immediate', 'daily', 'weekly'
+    digest_frequency = db.Column(db.String(20), default='immediate')
     quiet_hours_start = db.Column(db.Time, nullable=True)
     quiet_hours_end = db.Column(db.Time, nullable=True)
     
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # Relationships
-    user = db.relationship('User', backref='notification_settings')
     
     def __repr__(self):
         return f'<NotificationSettings {self.user_id}>'
