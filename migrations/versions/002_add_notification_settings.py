@@ -20,19 +20,13 @@ def upgrade():
         sa.Column('id', sa.String(length=50), nullable=False),
         sa.Column('user_id', sa.String(length=50), nullable=False),
         sa.Column('email_enabled', sa.Boolean(), nullable=True),
-        sa.Column('sms_enabled', sa.Boolean(), nullable=True),
-        sa.Column('push_enabled', sa.Boolean(), nullable=True),
         sa.Column('new_ticket_email', sa.Boolean(), nullable=True),
         sa.Column('status_change_email', sa.Boolean(), nullable=True),
         sa.Column('new_message_email', sa.Boolean(), nullable=True),
         sa.Column('sla_warning_email', sa.Boolean(), nullable=True),
-        sa.Column('assignment_email', sa.Boolean(), nullable=True),
         sa.Column('digest_frequency', sa.String(length=20), nullable=True),
-        sa.Column('quiet_hours_start', sa.Time(), nullable=True),
-        sa.Column('quiet_hours_end', sa.Time(), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.Column('updated_at', sa.DateTime(), nullable=True),
-        sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
         sa.PrimaryKeyConstraint('id')
     )
     

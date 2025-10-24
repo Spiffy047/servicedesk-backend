@@ -32,10 +32,8 @@ def upgrade():
     # Create indexes
     op.create_index('ix_email_logs_status', 'email_logs', ['status'])
     op.create_index('ix_email_logs_created_at', 'email_logs', ['created_at'])
-    op.create_index('ix_email_logs_recipient', 'email_logs', ['recipient'])
 
 def downgrade():
-    op.drop_index('ix_email_logs_recipient', table_name='email_logs')
     op.drop_index('ix_email_logs_created_at', table_name='email_logs')
     op.drop_index('ix_email_logs_status', table_name='email_logs')
     op.drop_table('email_logs')
