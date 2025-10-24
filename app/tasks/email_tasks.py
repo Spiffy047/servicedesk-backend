@@ -56,36 +56,3 @@ def send_new_ticket_email(ticket_data, recipient_email):
         'new_ticket.html',
         ticket=ticket_data
     )
-
-@celery.task
-def send_status_change_email(ticket_data, old_status, new_status, recipient_email):
-    """Send status change notification email"""
-    return send_email_async.delay(
-        [recipient_email],
-        f"Ticket Status Updated: {ticket_data['id']}",
-        'status_change.html',
-        ticket=ticket_data,
-        old_status=old_status,
-        new_status=new_status
-    )
-
-@celery.task
-def send_sla_warning_email(ticket_data, recipient_email):
-    """Send SLA warning email"""
-    return send_email_async.delay(
-        [recipient_email],
-        f"SLA Warning: {ticket_data['id']}",
-        'sla_warning.html',
-        ticket=ticket_data
-    )
-
-@celery.task
-def send_new_message_email(ticket_data, message_data, recipient_email):
-    """Send new message notification email"""
-    return send_email_async.delay(
-        [recipient_email],
-        f"New Message on Ticket: {ticket_data['id']}",
-        'new_message.html',
-        ticket=ticket_data,
-        message=message_data
-    )
