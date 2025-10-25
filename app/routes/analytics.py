@@ -86,3 +86,4 @@ def _cached_analytics_query(query_type: str, params: str):
         return {'cached': True, 'computation_time': '2.3s'}
     return {}from functools import lru_cache
 from app.services.sla_service import SLAService
+sla_service = SLAService()
