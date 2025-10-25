@@ -89,3 +89,4 @@ from app.services.sla_service import SLAService
 sla_service = SLAService()
 # Enhanced trends with priority distribution
 # Forecasting with confidence intervals
+# Caching for expensive analytics queries
