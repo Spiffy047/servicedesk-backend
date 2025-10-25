@@ -87,3 +87,4 @@ def _cached_analytics_query(query_type: str, params: str):
     return {}from functools import lru_cache
 from app.services.sla_service import SLAService
 sla_service = SLAService()
+# Enhanced trends with priority distribution
