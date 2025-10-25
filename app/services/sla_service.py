@@ -39,3 +39,12 @@ class SLAService:
             'is_violated': is_violated,
             'status': 'violated' if is_violated else 'within_sla'
         }
+    
+    def detect_violations(self, tickets: List[Dict]) -> List[Dict]:
+        """Detect SLA violations across multiple tickets"""
+        violations = []
+        for ticket in tickets:
+            sla_status = self.calculate_sla_status(ticket)
+            if sla_status['is_violated']:
+                violations.append(sla_status)
+        return violations
