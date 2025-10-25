@@ -39,29 +39,3 @@ class SLAService:
             'is_violated': is_violated,
             'status': 'violated' if is_violated else 'within_sla'
         }
-    
-    def detect_violations(self, tickets: List[Dict]) -> List[Dict]:
-        """Detect SLA violations across multiple tickets"""
-        violations = []
-        for ticket in tickets:
-            sla_status = self.calculate_sla_status(ticket)
-            if sla_status['is_violated']:
-                violations.append(sla_status)
-        return violations
-    
-    def get_sla_metrics(self, tickets: List[Dict]) -> Dict:
-        """Calculate overall SLA metrics"""
-        total_tickets = len(tickets)
-        if total_tickets == 0:
-            return {'total': 0, 'violations': 0, 'compliance_rate': 100.0}
-        
-        violations = self.detect_violations(tickets)
-        violation_count = len(violations)
-        compliance_rate = ((total_tickets - violation_count) / total_tickets) * 100
-        
-        return {
-            'total_tickets': total_tickets,
-            'violations': violation_count,
-            'compliance_rate': round(compliance_rate, 2),
-            'violation_details': violations
-        }
