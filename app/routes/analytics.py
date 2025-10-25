@@ -84,4 +84,4 @@ def _cached_analytics_query(query_type: str, params: str):
     # Simulate expensive query
     if query_type == 'complex_trends':
         return {'cached': True, 'computation_time': '2.3s'}
-    return {}
+    return {}from functools import lru_cache
