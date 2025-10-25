@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import Dict, List
 import logging
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,9 @@ class SLAService:
             sla_status = self.calculate_sla_status(ticket)
             if sla_status['is_violated']:
                 violations.append(sla_status)
-        return violations    def get_sla_metrics(self, tickets: List[Dict]) -> Dict:
+        return violations
+    
+    def get_sla_metrics(self, tickets: List[Dict]) -> Dict:
         """Calculate overall SLA metrics"""
         total_tickets = len(tickets)
         if total_tickets == 0:

@@ -1,9 +1,7 @@
 from flask import Blueprint, request, jsonify
-from app import db
 from datetime import datetime, timedelta
 from app.services.sla_service import SLAService
 from functools import lru_cache
-import json
 
 analytics_bp = Blueprint('analytics', __name__)
 sla_service = SLAService()
@@ -21,7 +19,6 @@ def get_trends():
     """Get ticket trends and patterns"""
     days = request.args.get('days', 30, type=int)
     
-    # Mock data for trends
     trends_data = {
         'period': f'{days} days',
         'ticket_volume': {
@@ -49,7 +46,6 @@ def get_forecasting():
     """Get ticket volume forecasting"""
     horizon = request.args.get('horizon', 7, type=int)
     
-    # Simple forecasting mock
     forecast_data = {
         'forecast_horizon_days': horizon,
         'predicted_volume': {
@@ -68,7 +64,6 @@ def get_forecasting():
 @analytics_bp.route('/sla-status', methods=['GET'])
 def get_sla_status():
     """Get SLA compliance status"""
-    # Mock ticket data
     mock_tickets = [
         {'id': 1, 'priority': 'high', 'created_at': '2024-01-15T10:00:00', 'resolved_at': '2024-01-15T16:00:00'},
         {'id': 2, 'priority': 'critical', 'created_at': '2024-01-15T14:00:00', 'resolved_at': None},
@@ -81,13 +76,6 @@ def get_sla_status():
 @lru_cache(maxsize=128)
 def _cached_analytics_query(query_type: str, params: str):
     """Cached analytics queries for expensive operations"""
-    # Simulate expensive query
     if query_type == 'complex_trends':
         return {'cached': True, 'computation_time': '2.3s'}
-    return {}from functools import lru_cache
-from app.services.sla_service import SLAService
-sla_service = SLAService()
-# Enhanced trends with priority distribution
-# Forecasting with confidence intervals
-# Caching for expensive analytics queries
-# Analytics API implementation complete - DESK-201
+    return {}
