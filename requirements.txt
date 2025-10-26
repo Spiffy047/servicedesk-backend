@@ -1,0 +1,11 @@
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+Flask-SocketIO==5.3.6
+Flask-JWT-Extended==4.5.3
+python-socketio==5.9.0
+Werkzeug==2.3.7
+Pillow==10.0.1
+python-magic==0.4.27
+python-magic-bin==0.4.14
+gunicorn==21.2.0
+python-dotenv==1.0.0
