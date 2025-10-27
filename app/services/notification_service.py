@@ -32,3 +32,10 @@ class NotificationService:
         message = f"Ticket {ticket.id} changed from {old_status} to {new_status}"
         print(f"STATUS CHANGE: {message}")
         return True
+    
+    @staticmethod
+    def notify_sla_violation(ticket):
+        """Notify about SLA violation"""
+        message = f"SLA VIOLATION: Ticket {ticket.id} has violated SLA"
+        print(f"SLA ALERT: {message}")
+        return True
