@@ -1,76 +1,63 @@
 from flask import Blueprint, request, jsonify
-from app.services.notification_service import NotificationService
-from datetime import datetime
+from app import db
+from app.models.user import User
+from app.schemas.user_schema import user_schema, users_schema
 
 users_bp = Blueprint('users', __name__)
-notification_service = NotificationService()
 
-@users_bp.route('/<int:user_id>/notification-preferences', methods=['GET'])
-def get_notification_preferences(user_id):
-    """Get user notification preferences"""
-    # Mock user preferences
-    preferences = {
-        'user_id': user_id,
-        'email_notifications': True,
-        'sms_notifications': False,
-        'notification_types': {
-            'ticket_created': True,
-            'ticket_updated': True,
-            'sla_violation': True,
-            'ticket_resolved': False
-        },
-        'quiet_hours': {
-            'enabled': True,
-            'start': '22:00',
-            'end': '08:00'
-        }
-    }
+@users_bp.route('/', methods=['GET'])
+def get_users():
+    """Get all users"""
+    role = request.args.get('role')
     
-    return jsonify(preferences)
+    query = User.query
+    if role:
+        query = query.filter(User.role == role)
+    
+    users = query.order_by(User.name).all()
+    return jsonify(users_schema.dump(users))
 
-@users_bp.route('/<int:user_id>/notification-preferences', methods=['PUT'])
-def update_notification_preferences(user_id):
-    """Update user notification preferences"""
+@users_bp.route('/<user_id>', methods=['GET'])
+def get_user(user_id):
+    """Get a specific user"""
+    user = User.query.get_or_404(user_id)
+    return jsonify(user_schema.dump(user))
+
+@users_bp.route('/', methods=['POST'])
+def create_user():
+    """Create a new user"""
     data = request.get_json()
     
-    # Mock update
-    updated_preferences = {
-        'user_id': user_id,
-        'updated_at': datetime.utcnow().isoformat(),
-        'preferences': data
-    }
+    user = User(
+        id=data['id'],
+        name=data['name'],
+        email=data['email'],
+        role=data['role']
+    )
     
-    return jsonify({
-        'message': 'Notification preferences updated',
-        'data': updated_preferences
-    })
+    db.session.add(user)
+    db.session.commit()
+    
+    return jsonify(user_schema.dump(user)), 201
 
-@users_bp.route('/<int:user_id>/send-test-notification', methods=['POST'])
-def send_test_notification(user_id):
-    """Send test notification to user"""
+@users_bp.route('/<user_id>', methods=['PUT'])
+def update_user(user_id):
+    """Update a user"""
+    user = User.query.get_or_404(user_id)
     data = request.get_json()
-    template_name = data.get('template', 'ticket_created')
     
-    # Mock user email
-    user_email = f"user{user_id}@example.com"
+    for field in ['name', 'email', 'role']:
+        if field in data:
+            setattr(user, field, data[field])
     
-    context = {
-        'ticket_id': 123,
-        'title': 'Test Notification',
-        'priority': 'medium',
-        'status': 'open'
-    }
-    
-    success = notification_service.send_notification(user_email, template_name, context)
-    
-    return jsonify({
-        'message': 'Test notification sent' if success else 'Failed to send notification',
-        'template': template_name,
-        'recipient': user_email
-    })
+    db.session.commit()
+    return jsonify(user_schema.dump(user))
 
-@users_bp.route('/notification-queue-status', methods=['GET'])
-def get_notification_queue_status():
-    """Get notification queue status"""
-    status = notification_service.get_queue_status()
-    return jsonify(status)
+@users_bp.route('/<user_id>', methods=['DELETE'])
+def delete_user(user_id):
+    """Delete a user"""
+    user = User.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    
+    return '', 204
