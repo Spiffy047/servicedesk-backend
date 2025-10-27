@@ -7,3 +7,4 @@ Flask-Marshmallow==0.15.0
 marshmallow-sqlalchemy==0.29.0
 python-dotenv==1.0.0
 Werkzeug==2.3.7
+reportlab==4.0.4
