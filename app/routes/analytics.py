@@ -1,8 +1,16 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from app import db
 from app.models.ticket import Ticket
 from app.models.user import Agent
 from sqlalchemy import func, case
+from datetime import datetime, timedelta
+import redis
+
+# Redis cache for expensive queries
+try:
+    cache = redis.Redis(host='localhost', port=6379, db=0)
+except:
+    cache = None
 
 analytics_bp = Blueprint('analytics', __name__)
 
@@ -63,3 +71,31 @@ def get_dashboard_analytics():
         'sla_violations': sla_violations,
         'priority_breakdown': dict(priority_counts)
     })
+
+@analytics_bp.route('/trends', methods=['GET'])
+def get_trends():
+    """Get ticket trends with caching"""
+    days = request.args.get('days', 30, type=int)
+    
+    cache_key = f"trends_{days}"
+    if cache:
+        cached_result = cache.get(cache_key)
+        if cached_result:
+            return jsonify(eval(cached_result))
+    
+    daily_tickets = db.session.query(
+        func.date(Ticket.created_at).label('date'),
+        func.count(Ticket.id).label('count')
+    ).filter(
+        Ticket.created_at >= datetime.utcnow() - timedelta(days=days)
+    ).group_by(func.date(Ticket.created_at)).all()
+    
+    result = [{
+        'date': str(day.date),
+        'tickets': day.count
+    } for day in daily_tickets]
+    
+    if cache:
+        cache.setex(cache_key, 3600, str(result))
+    
+    return jsonify(result)
