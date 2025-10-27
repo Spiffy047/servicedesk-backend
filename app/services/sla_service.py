@@ -1,3 +1,5 @@
+# SLA Service - Service Level Agreement monitoring and compliance
+# 💡 PRESENTATION HINT: "Real-time SLA tracking with priority-based thresholds"
 from datetime import datetime, timedelta
 from typing import Dict, List
 import logging
@@ -5,29 +7,38 @@ import logging
 logger = logging.getLogger(__name__)
 
 class SLAService:
-    """Service for SLA calculations and violation detection"""
+    """Service for SLA calculations and violation detection
+    💡 PRESENTATION HINT: "Automated SLA monitoring prevents service level breaches"
+    """
     
     def __init__(self):
+        # Priority-based SLA thresholds
         self.sla_thresholds = {
-            'critical': timedelta(hours=4),
-            'high': timedelta(hours=8),
-            'medium': timedelta(hours=24),
-            'low': timedelta(hours=72)
+            'critical': timedelta(hours=4),   # Mission-critical issues
+            'high': timedelta(hours=8),       # High-impact problems
+            'medium': timedelta(hours=24),    # Standard requests
+            'low': timedelta(hours=72)        # Low-priority items
         }
     
     def calculate_sla_status(self, ticket_data: Dict) -> Dict:
-        """Calculate SLA status for a ticket"""
+        """Calculate SLA status for a ticket
+        💡 PRESENTATION HINT: "Real-time SLA calculation based on priority and timestamps"
+        """
         priority = ticket_data.get('priority', 'medium').lower()
         created_at = datetime.fromisoformat(ticket_data['created_at'])
         resolved_at = ticket_data.get('resolved_at')
         
+        # Get priority-specific threshold
         threshold = self.sla_thresholds.get(priority, self.sla_thresholds['medium'])
         
+        # Calculate violation status
         if resolved_at:
+            # Closed ticket - check final resolution time
             resolved_time = datetime.fromisoformat(resolved_at)
             resolution_time = resolved_time - created_at
             is_violated = resolution_time > threshold
         else:
+            # Open ticket - check current elapsed time
             elapsed_time = datetime.utcnow() - created_at
             is_violated = elapsed_time > threshold
             resolution_time = elapsed_time
@@ -50,11 +61,14 @@ class SLAService:
         return violations
     
     def get_sla_metrics(self, tickets: List[Dict]) -> Dict:
-        """Calculate overall SLA metrics"""
+        """Calculate overall SLA metrics
+        💡 PRESENTATION HINT: "Comprehensive SLA dashboard metrics for management reporting"
+        """
         total_tickets = len(tickets)
         if total_tickets == 0:
             return {'total': 0, 'violations': 0, 'compliance_rate': 100.0}
         
+        # Calculate violations and compliance rate
         violations = self.detect_violations(tickets)
         violation_count = len(violations)
         compliance_rate = ((total_tickets - violation_count) / total_tickets) * 100

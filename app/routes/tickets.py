@@ -1,3 +1,5 @@
+# Ticket Management Routes - Core CRUD operations and analytics
+# 💡 PRESENTATION HINT: "Complete ticket lifecycle management with SLA tracking"
 from flask import Blueprint, request, jsonify
 from app import db
 from app.models.ticket import Ticket, TicketActivity
@@ -10,12 +12,16 @@ tickets_bp = Blueprint('tickets', __name__)
 
 @tickets_bp.route('/', methods=['GET'])
 def get_tickets():
-    """Get all tickets with optional filtering and real-time SLA calculation"""
+    """Get all tickets with optional filtering and real-time SLA calculation
+    💡 PRESENTATION HINT: "Dynamic filtering with real-time SLA monitoring"
+    """
+    # Extract filter parameters
     status = request.args.get('status')
     priority = request.args.get('priority')
     assigned_to = request.args.get('assigned_to')
     created_by = request.args.get('created_by')
     
+    # Build dynamic query with filters
     query = Ticket.query
     
     if status:
@@ -52,13 +58,16 @@ def get_ticket(ticket_id):
 
 @tickets_bp.route('/', methods=['POST'])
 def create_ticket():
-    """Create a new ticket"""
+    """Create a new ticket
+    💡 PRESENTATION HINT: "Auto-generates ticket ID and assigns to best available agent"
+    """
     data = request.get_json() or {}
     
-    # Generate ticket ID
+    # Generate sequential ticket ID
     ticket_count = Ticket.query.count() + 1
     ticket_id = f"TKT-{ticket_count:04d}"
     
+    # Create ticket with defaults
     ticket = Ticket(
         id=ticket_id,
         title=data['title'],
@@ -159,7 +168,9 @@ def delete_ticket(ticket_id):
 
 @tickets_bp.route('/analytics/sla-adherence', methods=['GET'])
 def get_sla_adherence():
-    """Get SLA adherence analytics - ALL tickets in system"""
+    """Get SLA adherence analytics - ALL tickets in system
+    💡 PRESENTATION HINT: "Real-time SLA performance metrics for management dashboard"
+    """
     all_tickets = Ticket.query.all()
     
     if not all_tickets:
@@ -170,6 +181,7 @@ def get_sla_adherence():
             'adherence_percentage': 0
         })
     
+    # Calculate SLA metrics
     met_sla = len([t for t in all_tickets if not t.sla_violated])
     violated_sla = len([t for t in all_tickets if t.sla_violated])
     adherence_percentage = (met_sla / len(all_tickets)) * 100
@@ -183,9 +195,12 @@ def get_sla_adherence():
 
 @tickets_bp.route('/analytics/aging', methods=['GET'])
 def get_ticket_aging():
-    """Get ticket aging analysis"""
+    """Get ticket aging analysis
+    💡 PRESENTATION HINT: "Categorizes open tickets by age for workload management"
+    """
     open_tickets = Ticket.query.filter(Ticket.status != 'Closed').all()
     
+    # Define aging buckets
     aging_buckets = {
         '0-24 hours': [],
         '24-48 hours': [],
@@ -193,6 +208,7 @@ def get_ticket_aging():
         '72+ hours': []
     }
     
+    # Categorize tickets by age
     for ticket in open_tickets:
         hours_open = ticket.hours_open
         
@@ -205,6 +221,7 @@ def get_ticket_aging():
         else:
             aging_buckets['72+ hours'].append(ticket)
     
+    # Format response with counts and ticket details
     result = {}
     for bucket, tickets in aging_buckets.items():
         result[bucket] = {
