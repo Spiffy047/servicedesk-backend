@@ -17,10 +17,33 @@ class EmailService:
         """Send email notification with logging"""
         try:
             print(f"EMAIL: To={recipient}, Subject={subject}, Message={message}")
+            
+            # Log email attempt
+            self._log_email(recipient, subject, 'notification', 'sent')
             return True
         except Exception as e:
             print(f"Failed to send email: {str(e)}")
+            self._log_email(recipient, subject, 'notification', 'failed')
             return False
+    
+    def _log_email(self, recipient, subject, template, status):
+        """Log email attempt to database"""
+        try:
+            from app.models.email_log import EmailLog
+            from app import db
+            import uuid
+            
+            log_entry = EmailLog(
+                id=str(uuid.uuid4()),
+                recipient=recipient,
+                subject=subject,
+                template=template,
+                status=status
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+        except Exception as e:
+            print(f"Failed to log email: {str(e)}")
     
     def send_template_email(self, recipient, template_name, data):
         """Send email using template"""
