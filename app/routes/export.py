@@ -1,10 +1,11 @@
 from flask import Blueprint, request, jsonify, send_file
-from datetime import datetime
+from datetime import datetime, timedelta
 import csv
 import io
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 import tempfile
+import os
 
 export_bp = Blueprint('export', __name__)
 
@@ -14,6 +15,7 @@ def export_csv():
     start_date = request.args.get('start_date')
     end_date = request.args.get('end_date')
     
+    # Mock ticket data
     tickets = [
         {'id': 1, 'title': 'Login Issue', 'priority': 'high', 'status': 'open', 'created_at': '2024-01-15'},
         {'id': 2, 'title': 'Email Problem', 'priority': 'medium', 'status': 'resolved', 'created_at': '2024-01-14'}
@@ -35,14 +37,18 @@ def export_pdf():
     """Export tickets to PDF report"""
     template = request.args.get('template', 'standard')
     
+    # Create temporary PDF file
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
     
+    # Create PDF with ReportLab
     c = canvas.Canvas(temp_file.name, pagesize=letter)
     width, height = letter
     
+    # Header
     c.setFont("Helvetica-Bold", 16)
     c.drawString(50, height - 50, "Service Desk Report")
     
+    # Content
     c.setFont("Helvetica", 12)
     y_position = height - 100
     
@@ -71,6 +77,7 @@ def generate_template_report():
     template_name = data.get('template', 'default')
     filters = data.get('filters', {})
     
+    # Template-based report generation
     report_config = {
         'template': template_name,
         'filters_applied': filters,
@@ -86,5 +93,6 @@ def generate_template_report():
 
 def _optimize_csv_generation(data, chunk_size=1000):
     """Optimize CSV generation for large datasets"""
+    # Process data in chunks
     for i in range(0, len(data), chunk_size):
         yield data[i:i + chunk_size]

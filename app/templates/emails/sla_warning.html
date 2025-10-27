@@ -1,0 +1,24 @@
+{% extends "emails/base.html" %}
+
+{% block title %}SLA Warning - {{ ticket.id }}{% endblock %}
+
+{% block header %}⚠️ SLA Warning{% endblock %}
+
+{% block content %}
+<h2 style="color: #dc2626;">SLA Violation Alert</h2>
+
+<div class="ticket-info priority-{{ ticket.priority.lower() }}">
+    <h3>{{ ticket.title }}</h3>
+    <p><strong>Ticket ID:</strong> {{ ticket.id }}</p>
+    <p><strong>Priority:</strong> {{ ticket.priority }}</p>
+    <p><strong>Status:</strong> {{ ticket.status }}</p>
+</div>
+
+<div style="background-color: #fef2f2; border: 1px solid #fecaca; padding: 15px; border-radius: 6px;">
+    <p style="color: #dc2626; font-weight: bold;">
+        ⚠️ This ticket is approaching its SLA deadline!
+    </p>
+</div>
+
+<a href="#" class="button" style="background-color: #dc2626;">Take Action Now</a>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "emails/base.html" %}
+
+{% block title %}New Message - {{ ticket.id }}{% endblock %}
+
+{% block header %}New Message Received{% endblock %}
+
+{% block content %}
+<h2>A new message has been added to your ticket</h2>
+
+<div class="ticket-info priority-{{ ticket.priority.lower() }}">
+    <h3>{{ ticket.title }}</h3>
+    <p><strong>Ticket ID:</strong> {{ ticket.id }}</p>
+    <p><strong>Status:</strong> {{ ticket.status }}</p>
+</div>
+
+<div style="background-color: white; padding: 20px; border-radius: 6px; border: 1px solid #e2e8f0;">
+    <h4>New Message from {{ message.sender_name }}</h4>
+    <p style="color: #64748b;">{{ message.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+    <div style="margin-top: 15px;">
+        {{ message.message }}
+    </div>
+</div>
+
+<a href="#" class="button">View Full Conversation</a>
+{% endblock %}
