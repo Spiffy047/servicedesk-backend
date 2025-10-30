@@ -1,15 +1,22 @@
 """
 Notification Service for IT ServiceDesk
-Handles alert creation, management, and delivery
+Handles alert creation, management, and delivery with enhanced functionality
 """
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from app import db
 from app.models import Alert, User, Ticket
 from sqlalchemy import text
 
 class NotificationService:
-    """Enhanced notification service for comprehensive alert management"""
+    """Enhanced notification service combining both alert management and basic notifications"""
+    
+    def __init__(self):
+        self.templates = {
+            'ticket_created': 'New ticket {ticket_id} created: {title}',
+            'ticket_assigned': 'Ticket {ticket_id} assigned to you: {title}',
+            'status_changed': 'Ticket {ticket_id} status changed to {status}'
+        }
     
     @staticmethod
     def create_alert(user_id, ticket_id, alert_type, title, message):
@@ -46,6 +53,33 @@ class NotificationService:
             raise
     
     @staticmethod
+    def send_notification(recipient, message):
+        """Send basic notification"""
+        print(f"NOTIFICATION: To={recipient}, Message={message}")
+        return True
+    
+    @staticmethod
+    def notify_ticket_assignment(ticket, agent):
+        """Notify agent about ticket assignment"""
+        message = f"Ticket {ticket.id} assigned to {agent.name}"
+        print(f"ASSIGNMENT: {message}")
+        return True
+    
+    @staticmethod
+    def notify_status_change(ticket, old_status, new_status):
+        """Notify about status change"""
+        message = f"Ticket {ticket.id} changed from {old_status} to {new_status}"
+        print(f"STATUS CHANGE: {message}")
+        return True
+    
+    @staticmethod
+    def notify_sla_violation(ticket):
+        """Notify about SLA violation"""
+        message = f"SLA VIOLATION: Ticket {ticket.id} has violated SLA"
+        print(f"SLA ALERT: {message}")
+        return True
+    
+    @staticmethod
     def create_assignment_alert(user_id, ticket_id, ticket_title, priority):
         """Create assignment alert with enhanced details"""
         title = f"New Ticket Assigned"
@@ -58,39 +92,6 @@ class NotificationService:
             title=title,
             message=message
         )
-    
-    @staticmethod
-    def create_sla_alert(user_id, ticket_id, ticket_title, hours_remaining):
-        """Create SLA violation warning alert"""
-        title = f"SLA Warning: {ticket_id}"
-        message = f"Ticket {ticket_id}: {ticket_title} has {hours_remaining} hours remaining before SLA violation"
-        
-        return NotificationService.create_alert(
-            user_id=user_id,
-            ticket_id=ticket_id,
-            alert_type='sla_warning',
-            title=title,
-            message=message
-        )
-    
-    @staticmethod
-    def create_escalation_alert(supervisor_ids, ticket_id, ticket_title, reason):
-        """Create escalation alerts for supervisors"""
-        alerts = []
-        title = f"Ticket Escalated: {ticket_id}"
-        message = f"Ticket {ticket_id}: {ticket_title} has been escalated. Reason: {reason}"
-        
-        for supervisor_id in supervisor_ids:
-            alert = NotificationService.create_alert(
-                user_id=supervisor_id,
-                ticket_id=ticket_id,
-                alert_type='escalation',
-                title=title,
-                message=message
-            )
-            alerts.append(alert)
-        
-        return alerts
     
     @staticmethod
     def get_user_alerts(user_id, limit=20, unread_only=False):
@@ -149,58 +150,3 @@ class NotificationService:
             db.session.rollback()
             print(f"[ERROR] Error marking alert {alert_id} as read: {e}")
             return False
-    
-    @staticmethod
-    def mark_all_alerts_read(user_id):
-        """Mark all alerts as read for a user"""
-        try:
-            db.session.execute(text("""
-                UPDATE alerts SET is_read = true 
-                WHERE user_id = :user_id AND is_read = false
-            """), {'user_id': user_id})
-            
-            db.session.commit()
-            return True
-            
-        except Exception as e:
-            db.session.rollback()
-            print(f"[ERROR] Error marking all alerts as read for user {user_id}: {e}")
-            return False
-    
-    @staticmethod
-    def get_alert_count(user_id, unread_only=True):
-        """Get count of alerts for a user"""
-        try:
-            query = text("""
-                SELECT COUNT(*) FROM alerts 
-                WHERE user_id = :user_id
-            """ + (" AND is_read = false" if unread_only else ""))
-            
-            result = db.session.execute(query, {'user_id': user_id})
-            return result.scalar() or 0
-            
-        except Exception as e:
-            print(f"[ERROR] Error getting alert count for user {user_id}: {e}")
-            return 0
-    
-    @staticmethod
-    def cleanup_old_alerts(days_old=30):
-        """Clean up old read alerts to maintain performance"""
-        try:
-            from datetime import timedelta
-            cutoff_date = datetime.utcnow() - timedelta(days=days_old)
-            
-            result = db.session.execute(text("""
-                DELETE FROM alerts 
-                WHERE is_read = true AND created_at < :cutoff_date
-            """), {'cutoff_date': cutoff_date})
-            
-            db.session.commit()
-            deleted_count = result.rowcount
-            print(f"🧹 Cleaned up {deleted_count} old alerts")
-            return deleted_count
-            
-        except Exception as e:
-            db.session.rollback()
-            print(f"[ERROR] Error cleaning up old alerts: {e}")
-            return 0
