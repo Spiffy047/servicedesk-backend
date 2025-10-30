@@ -1,6 +1,6 @@
-# IT ServiceDesk Backend
+# HOTFIX ServiceDesk Backend
 
-Flask REST API backend for the IT ServiceDesk platform with intelligent auto-assignment, advanced file handling, and comprehensive analytics.
+Flask REST API backend for the HOTFIX ServiceDesk platform with intelligent auto-assignment, advanced file handling, and comprehensive analytics.
 
 ## Features
 
@@ -93,11 +93,3 @@ The backend is deployed on Render with automatic deployments from the main branc
 - **Production URL**: https://hotfix.onrender.com/api
 - **Health Check**: https://hotfix.onrender.com/health
 - **API Documentation**: Contact system administrator
-
-## Recent Updates
-
-- [FIXED] Fixed auto-assignment to use live database agents
-- [FIXED] Enhanced file upload with dual endpoint support
-- [FIXED] Added agent name resolution in ticket responses
-- [FIXED] Improved error handling and debugging
-- [FIXED] Fixed Content-Type headers for multipart uploads
