@@ -6,6 +6,7 @@ Flask REST API backend for the HOTFIX ServiceDesk platform with intelligent auto
 
 ### Intelligent Auto-Assignment System
 - **Workload-based assignment** - Automatically assigns tickets to agents with least active workload
+- **Swagger api doc** - https://hotfix.onrender.com/api/docs/
 - **Live database integration** - Uses real agent data from PostgreSQL
 - **Role-based filtering** - Only assigns to Technical Users and Technical Supervisors
 - **Smart notifications** - Creates alerts for assigned agents and supervisors
