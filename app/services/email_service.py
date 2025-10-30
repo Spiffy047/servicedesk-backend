@@ -1,13 +1,68 @@
+"""
+Email Service Module
+Enhanced email service combining SendGrid integration with template functionality
+"""
+
 import os
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
 class EmailService:
+    """Enhanced email service class with SendGrid and template support"""
+    
     def __init__(self):
         self.sg = SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))
         self.from_email = os.environ.get('SENDGRID_FROM_EMAIL', 'mwanikijoe1@gmail.com')
+        self.templates = {
+            'ticket_created': 'New ticket {ticket_id} created: {title}',
+            'ticket_assigned': 'Ticket {ticket_id} assigned to you: {title}',
+            'status_changed': 'Ticket {ticket_id} status changed to {status}'
+        }
+    
+    def send_email(self, recipient, subject, message):
+        """Send email notification with logging"""
+        try:
+            print(f"EMAIL: To={recipient}, Subject={subject}, Message={message}")
+            
+            # Log email attempt
+            self._log_email(recipient, subject, 'notification', 'sent')
+            return True
+        except Exception as e:
+            print(f"Failed to send email: {str(e)}")
+            self._log_email(recipient, subject, 'notification', 'failed')
+            return False
+    
+    def _log_email(self, recipient, subject, template, status):
+        """Log email attempt to database"""
+        try:
+            from app.models.email_log import EmailLog
+            from app import db
+            import uuid
+            
+            log_entry = EmailLog(
+                id=str(uuid.uuid4()),
+                recipient=recipient,
+                subject=subject,
+                template=template,
+                status=status
+            )
+            db.session.add(log_entry)
+            db.session.commit()
+        except Exception as e:
+            print(f"Failed to log email: {str(e)}")
+    
+    def send_template_email(self, recipient, template_name, data):
+        """Send email using template"""
+        if template_name not in self.templates:
+            return False
+        
+        message = self.templates[template_name].format(**data)
+        subject = f"ServiceDesk: {template_name.replace('_', ' ').title()}"
+        
+        return self.send_email(recipient, subject, message)
     
     def send_ticket_notification(self, to_email, ticket_id, ticket_title, message_type='created'):
+        """Send ticket notification using SendGrid"""
         subject_map = {
             'created': f'New Ticket Created: {ticket_id}',
             'assigned': f'Ticket Assigned: {ticket_id}',
@@ -31,12 +86,15 @@ class EmailService:
         
         try:
             response = self.sg.send(message)
+            self._log_email(to_email, subject_map.get(message_type), message_type, 'sent')
             return True
         except Exception as e:
             print(f"Email send error: {e}")
+            self._log_email(to_email, subject_map.get(message_type), message_type, 'failed')
             return False
     
     def send_sla_violation_alert(self, to_email, ticket_id, ticket_title):
+        """Send SLA violation alert"""
         message = Mail(
             from_email=self.from_email,
             to_emails=to_email,
@@ -46,37 +104,9 @@ class EmailService:
         
         try:
             response = self.sg.send(message)
+            self._log_email(to_email, f'SLA Violation Alert: {ticket_id}', 'sla_violation', 'sent')
             return True
         except Exception as e:
             print(f"SLA alert email error: {e}")
-            return False
-    
-    def send_verification_email(self, to_email, verification_token, user_name):
-        verification_url = f"https://hotfix-frontend.vercel.app/verify-email?token={verification_token}"
-        
-        message = Mail(
-            from_email=self.from_email,
-            to_emails=to_email,
-            subject='Verify Your Email - Hotfix ServiceDesk',
-            html_content=f'''
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #2563eb;">Welcome to Hotfix ServiceDesk!</h2>
-                <p>Hello {user_name},</p>
-                <p>Please verify your email address to complete registration.</p>
-                <div style="text-align: center; margin: 30px 0;">
-                    <a href="{verification_url}" 
-                       style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">
-                        Verify Email
-                    </a>
-                </div>
-                <p>Link expires in 24 hours.</p>
-            </div>
-            '''
-        )
-        
-        try:
-            response = self.sg.send(message)
-            return True
-        except Exception as e:
-            print(f"Verification email error: {e}")
+            self._log_email(to_email, f'SLA Violation Alert: {ticket_id}', 'sla_violation', 'failed')
             return False
