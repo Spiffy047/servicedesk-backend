@@ -110,13 +110,11 @@ def create_app(config_name='default'):
     
     # === CORS CONFIGURATION ===
     # Configure Cross-Origin Resource Sharing for frontend integration
-    # WARNING: Allowing all origins (*) is not recommended for production
-    # TODO: Restrict origins to specific frontend domains in production
     CORS(app, 
-         resources={r"/*": {"origins": "*"}},  # Allow all origins (dev only)
+         resources={r"/*": {"origins": ["http://localhost:3000", "http://localhost:5173", "http://127.0.0.1:3000", "http://127.0.0.1:5173"]}},
          allow_headers=["Content-Type", "Authorization", "X-Requested-With", "X-CSRF-Token"],
          methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-         supports_credentials=False  # Disabled for deployment compatibility
+         supports_credentials=True
     )
     
     # === BLUEPRINT REGISTRATION ===
@@ -949,6 +947,49 @@ def create_app(config_name='default'):
         except Exception as e:
             print(f"Error fetching alerts for user {user_id}: {e}")
             return []
+    
+    @app.route('/api/upload/image', methods=['POST', 'OPTIONS'])
+    def upload_image():
+        """Upload image endpoint for frontend compatibility"""
+        if request.method == 'OPTIONS':
+            return '', 200
+            
+        try:
+            if 'file' not in request.files:
+                return {'error': 'No file provided'}, 400
+            
+            file = request.files['file']
+            ticket_id = request.form.get('ticket_id', 'temp')
+            uploaded_by = request.form.get('uploaded_by', '1')
+            
+            if file.filename == '':
+                return {'error': 'No file selected'}, 400
+            
+            # Use Cloudinary service
+            try:
+                from app.services.cloudinary_service import CloudinaryService
+                cloudinary_service = CloudinaryService()
+                result = cloudinary_service.upload_image(file, ticket_id, uploaded_by)
+                
+                if result and 'error' not in result:
+                    return {
+                        'success': True,
+                        'url': result['url'],
+                        'secure_url': result['url'],
+                        'public_id': result['public_id'],
+                        'width': result.get('width', 0),
+                        'height': result.get('height', 0),
+                        'format': result.get('format', 'unknown'),
+                        'bytes': result.get('bytes', 0)
+                    }, 200
+                else:
+                    error_msg = result.get('error', 'Upload failed') if result else 'Upload failed'
+                    return {'error': error_msg}, 500
+            except Exception as e:
+                return {'error': f'Upload error: {str(e)}'}, 500
+                
+        except Exception as e:
+            return {'error': str(e)}, 500
     
     @app.route('/api/files/download/<file_id>')
     def download_file(file_id):

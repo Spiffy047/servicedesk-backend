@@ -131,6 +131,26 @@ class NotificationService:
             return []
     
     @staticmethod
+    def get_alert_count(user_id, unread_only=True):
+        """Get alert count for a user"""
+        try:
+            if unread_only:
+                result = db.session.execute(text("""
+                    SELECT COUNT(*) FROM alerts WHERE user_id = :user_id AND is_read = false
+                """), {'user_id': user_id})
+            else:
+                result = db.session.execute(text("""
+                    SELECT COUNT(*) FROM alerts WHERE user_id = :user_id
+                """), {'user_id': user_id})
+            
+            count = result.scalar() or 0
+            return count
+            
+        except Exception as e:
+            print(f"[ERROR] Error fetching alert count for user {user_id}: {e}")
+            return 0
+    
+    @staticmethod
     def mark_alert_read(alert_id, user_id=None):
         """Mark specific alert as read with user validation"""
         try:
@@ -149,4 +169,20 @@ class NotificationService:
         except Exception as e:
             db.session.rollback()
             print(f"[ERROR] Error marking alert {alert_id} as read: {e}")
+            return False
+    
+    @staticmethod
+    def mark_all_alerts_read(user_id):
+        """Mark all alerts as read for a user"""
+        try:
+            result = db.session.execute(text("""
+                UPDATE alerts SET is_read = true WHERE user_id = :user_id AND is_read = false
+            """), {'user_id': user_id})
+            
+            db.session.commit()
+            return True
+            
+        except Exception as e:
+            db.session.rollback()
+            print(f"[ERROR] Error marking all alerts as read for user {user_id}: {e}")
             return False

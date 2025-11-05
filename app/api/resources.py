@@ -594,10 +594,26 @@ class UserResource(Resource):
     def delete(self, user_id):
         try:
             user = User.query.get_or_404(user_id)
+            
+            # Check if user has created tickets
+            created_tickets_count = Ticket.query.filter_by(created_by=user_id).count()
+            if created_tickets_count > 0:
+                return {'error': f'Cannot delete user: User has created {created_tickets_count} tickets. Please reassign or delete tickets first.'}, 400
+            
+            # Remove user from assigned tickets (set to NULL)
+            assigned_tickets = Ticket.query.filter_by(assigned_to=user_id).all()
+            for ticket in assigned_tickets:
+                ticket.assigned_to = None
+            
+            # Delete user's messages and alerts
+            Message.query.filter_by(sender_id=user_id).delete()
+            Alert.query.filter_by(user_id=user_id).delete()
+            
             db.session.delete(user)
             db.session.commit()
             return {'success': True, 'message': 'User deleted'}
         except Exception as e:
+            db.session.rollback()
             return {'error': str(e)}, 500
 
 class MessageListResource(Resource):
