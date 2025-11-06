@@ -15,6 +15,7 @@ class TicketSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'priority': {'required': False},
             'category': {'required': False},
+            'image_url': {'required': False, 'allow_blank': True, 'allow_null': True},
         }
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -64,6 +65,12 @@ class TicketViewSet(viewsets.ModelViewSet):
             missing_fields = [field for field in required_fields if not data.get(field)]
             if missing_fields:
                 return Response({'error': f'Missing required fields: {", ".join(missing_fields)}'}, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Handle image_url field - remove if invalid
+            if 'image_url' in data:
+                image_url = data['image_url']
+                if not image_url or len(str(image_url)) > 500 or not str(image_url).startswith(('http://', 'https://')):
+                    data.pop('image_url', None)
             
             # Generate ticket_id if not provided
             if 'ticket_id' not in data or not data['ticket_id']:
