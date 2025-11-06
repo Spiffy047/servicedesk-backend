@@ -1,0 +1,6 @@
+ID,Ticket ID,Title,Status,Priority,Category,Created By,Assigned To,Created At,Updated At
+5,TKT-0005,"Slow network connection",Open,Critical,Network,Bill Gates,Samuel Maina,2025-11-04 13:54:01.422931+00:00,2025-11-04 14:02:45.593599+00:00
+4,TKT-0004,"Window broken",New,High,Other,John Doe,Unassigned,2025-11-04 13:02:19.856064+00:00,2025-11-04 13:02:19.856843+00:00
+3,TKT-0003,"Test Ticket Creation",New,Medium,Technical,Test User,Unassigned,2025-11-04 13:01:13.465876+00:00,2025-11-04 13:01:13.466107+00:00
+2,TKT-1002,"Network too low",New,High,Network,Test User,Unassigned,2025-11-01 18:54:04.644742+00:00,2025-11-01 18:54:04.644755+00:00
+1,TKT-1001,"Test Ticket",New,Medium,Technical,Test User,Unassigned,2025-11-01 18:53:25.960294+00:00,2025-11-01 18:53:25.960302+00:00

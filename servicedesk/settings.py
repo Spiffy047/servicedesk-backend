@@ -4,8 +4,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-servicedesk-secret-key'
-DEBUG = True
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+DEBUG = False
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -55,7 +55,7 @@ WSGI_APPLICATION = 'servicedesk.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'instance' / 'servicedesk.db',
+        'NAME': os.path.join(BASE_DIR, 'servicedesk.db'),
     }
 }
 
