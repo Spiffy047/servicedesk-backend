@@ -12,6 +12,10 @@ class TicketSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ticket
         fields = '__all__'
+        extra_kwargs = {
+            'priority': {'required': False},
+            'category': {'required': False},
+        }
 
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
@@ -53,6 +57,13 @@ class TicketViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         try:
             data = request.data.copy()
+            print(f"Received ticket data: {data}")
+            
+            # Validate required fields
+            required_fields = ['title', 'description', 'priority', 'category', 'created_by']
+            missing_fields = [field for field in required_fields if not data.get(field)]
+            if missing_fields:
+                return Response({'error': f'Missing required fields: {", ".join(missing_fields)}'}, status=status.HTTP_400_BAD_REQUEST)
             
             # Generate ticket_id if not provided
             if 'ticket_id' not in data or not data['ticket_id']:
@@ -76,6 +87,8 @@ class TicketViewSet(viewsets.ModelViewSet):
                 
         except Exception as e:
             print(f"Error creating ticket: {e}")
+            import traceback
+            traceback.print_exc()
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
     def update(self, request, *args, **kwargs):
