@@ -93,26 +93,27 @@ class TicketViewSet(viewsets.ModelViewSet):
                     file = request.FILES.get('file') or request.FILES.get('image')
                     if file:
                         try:
-                            from files.views import upload_image
-                            # Create a mock request for upload
-                            from django.http import HttpRequest
-                            upload_request = HttpRequest()
-                            upload_request.FILES = {'file': file}
-                            upload_request.POST = {'ticket_id': ticket.ticket_id, 'user_id': str(data['created_by'])}
-                            upload_request.method = 'POST'
+                            from app.services.cloudinary_service import CloudinaryService
+                            cloudinary_service = CloudinaryService()
+                            result = cloudinary_service.upload_image(file, ticket.ticket_id, data['created_by'])
                             
-                            # Upload image and get URL
-                            upload_response = upload_image(upload_request)
-                            if upload_response.status_code == 200:
-                                upload_data = upload_response.data
-                                if 'url' in upload_data:
-                                    ticket.image_url = upload_data['url']
-                                    ticket.save()
-                                    print(f"Image uploaded and saved to ticket: {upload_data['url']}")
+                            if result and 'error' not in result and 'url' in result:
+                                ticket.image_url = result['url']
+                                ticket.save()
+                                print(f"Image uploaded and saved to ticket {ticket.ticket_id}: {result['url']}")
+                            else:
+                                print(f"Image upload failed: {result}")
                         except Exception as upload_error:
                             print(f"Image upload failed: {upload_error}")
+                            import traceback
+                            traceback.print_exc()
                 
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+                # Refresh ticket data to include image_url
+                ticket.refresh_from_db()
+                response_data = serializer.data
+                response_data['image_url'] = ticket.image_url
+                
+                return Response(response_data, status=status.HTTP_201_CREATED)
             else:
                 print(f"Validation errors: {serializer.errors}")
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
