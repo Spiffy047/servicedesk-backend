@@ -76,14 +76,26 @@ def upload_image(request):
         if not file:
             return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
         
-        ticket_id = request.data.get('ticket_id', 'temp')
-        user_id = request.data.get('user_id', 1)
+        ticket_id = request.POST.get('ticket_id') or request.data.get('ticket_id', 'temp')
+        user_id = request.POST.get('user_id') or request.data.get('user_id', 1)
         
         cloudinary_service = CloudinaryService()
         result = cloudinary_service.upload_image(file, ticket_id, user_id)
         
         if 'error' in result:
             return Response({'error': result['error']}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Update ticket with image URL
+        if ticket_id != 'temp':
+            try:
+                from tickets.models import Ticket
+                ticket = Ticket.objects.filter(ticket_id=ticket_id).first()
+                if ticket:
+                    ticket.image_url = result['url']
+                    ticket.save()
+                    print(f"Updated ticket {ticket_id} with image URL: {result['url']}")
+            except Exception as e:
+                print(f"Failed to update ticket with image URL: {e}")
         
         return Response({
             'success': True,
@@ -97,4 +109,6 @@ def upload_image(request):
         })
         
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

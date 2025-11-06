@@ -86,7 +86,32 @@ class TicketViewSet(viewsets.ModelViewSet):
                 
             serializer = self.get_serializer(data=data)
             if serializer.is_valid():
-                self.perform_create(serializer)
+                ticket = serializer.save()
+                
+                # Handle file upload if present
+                if 'file' in request.FILES or 'image' in request.FILES:
+                    file = request.FILES.get('file') or request.FILES.get('image')
+                    if file:
+                        try:
+                            from files.views import upload_image
+                            # Create a mock request for upload
+                            from django.http import HttpRequest
+                            upload_request = HttpRequest()
+                            upload_request.FILES = {'file': file}
+                            upload_request.POST = {'ticket_id': ticket.ticket_id, 'user_id': str(data['created_by'])}
+                            upload_request.method = 'POST'
+                            
+                            # Upload image and get URL
+                            upload_response = upload_image(upload_request)
+                            if upload_response.status_code == 200:
+                                upload_data = upload_response.data
+                                if 'url' in upload_data:
+                                    ticket.image_url = upload_data['url']
+                                    ticket.save()
+                                    print(f"Image uploaded and saved to ticket: {upload_data['url']}")
+                        except Exception as upload_error:
+                            print(f"Image upload failed: {upload_error}")
+                
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             else:
                 print(f"Validation errors: {serializer.errors}")
